@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* interactive shape */
+.boxes {
+  @apply p-[50px] grid grid-cols-3 grid-rows-3 gap-5 w-fit;
+}
+
+.box {
+  @apply w-[80px] h-[80px] transition-colors duration-300 ease-in-out;
+}
+
+.box.visible {
+  @apply border border-black cursor-pointer;
+}
+
+.box.invisible {
+  @apply opacity-0 cursor-auto;
+}
