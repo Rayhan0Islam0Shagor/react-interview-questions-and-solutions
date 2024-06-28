@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 const featuresItems = [
   { icon: '🏁', name: 'Interactive Shape', href: '/interactive-shape' },
+  { icon: '🏁', name: 'path finding', href: '/path-finding' },
   { icon: '🔥', name: 'Type checking TypeScript', href: '/' },
   { icon: '💅', name: 'Tailwind CSS', href: '/' },
   { icon: '✨', name: 'ESlint', href: '/' },

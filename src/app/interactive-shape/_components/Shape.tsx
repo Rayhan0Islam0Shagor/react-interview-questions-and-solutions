@@ -15,7 +15,9 @@ const classes = {
   boxes: 'p-[50px] grid grid-cols-3 grid-rows-3 gap-5 w-fit',
   box: 'w-[80px] h-[80px] transition-colors duration-300 ease-in-out',
   visible: 'border border-black cursor-pointer',
-  invisible: 'opacity-0 cursor-auto'
+  invisible: 'opacity-0 cursor-auto',
+  button: 'px-4 py-2 bg-gray-400 text-white rounded-md',
+  selected: 'bg-green-500'
 };
 
 // 2D Array
@@ -35,6 +37,8 @@ interface ShapeProps {
  * @returns {JSX.Element} The rendered shape component.
  */
 const Shape = ({ data }: ShapeProps): JSX.Element => {
+  const [from, setFrom] = React.useState<'start' | 'end'>('start');
+
   // converting 2D array to 1D array
   const boxes = React.useMemo(() => data.flat(Infinity), [data]);
 
@@ -73,7 +77,7 @@ const Shape = ({ data }: ShapeProps): JSX.Element => {
 
     const removeNextKey = () => {
       if (keys.length) {
-        const currentKey = keys.shift();
+        const currentKey = from === 'start' ? keys.shift() : keys.pop();
         setSelected((pre) => {
           const updatedKeys = new Set(pre);
           updatedKeys.delete(currentKey as number);
@@ -91,7 +95,7 @@ const Shape = ({ data }: ShapeProps): JSX.Element => {
     };
 
     timeRef.current = setTimeout(removeNextKey, 100);
-  }, [selected]);
+  }, [from, selected]);
 
   React.useEffect(() => {
     if (selected.size >= countOfVisibleBoxes) {
@@ -115,9 +119,26 @@ const Shape = ({ data }: ShapeProps): JSX.Element => {
     });
 
   return (
-    <div className={classes.boxes} onClick={handleClick}>
-      {renderBoxes()}
-    </div>
+    <>
+      <div className="flex items-center gap-6 mt-4">
+        <button
+          onClick={() => setFrom('start')}
+          className={cn(classes.button, from === 'start' && classes.selected)}
+        >
+          Unload From Start
+        </button>
+        <button
+          onClick={() => setFrom('end')}
+          className={cn(classes.button, from === 'end' && classes.selected)}
+        >
+          Unload From End
+        </button>
+      </div>
+
+      <div className={classes.boxes} onClick={handleClick}>
+        {renderBoxes()}
+      </div>
+    </>
   );
 };
 
