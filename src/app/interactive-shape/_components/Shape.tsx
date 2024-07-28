@@ -12,9 +12,9 @@ import { cn } from '@/lib/utils';
 // DS?? Array? Object? Something?
 
 const classes = {
-  boxes: 'p-[50px] grid grid-cols-3 grid-rows-3 gap-5 w-fit',
-  box: 'w-[80px] h-[80px] transition-colors duration-300 ease-in-out',
-  visible: 'border border-black cursor-pointer',
+  boxes: 'p-[50px] w-fit',
+  row: 'flex gap-5 pb-3 w-fit last:pb-0',
+  box: 'size-[80px] transition-colors duration-300 ease-in-out border border-black cursor-pointer',
   invisible: 'opacity-0 cursor-auto',
   button: 'px-4 py-2 bg-gray-400 text-white rounded-md',
   selected: 'bg-green-500'
@@ -23,7 +23,7 @@ const classes = {
 // 2D Array
 // [ [1, 1, 1], [1, 0, 0], [1, 1, 1] ]
 interface ShapeProps {
-  data: number[][];
+  boxes: number[][];
 }
 
 /**
@@ -36,21 +36,27 @@ interface ShapeProps {
  * @param {ShapeProps} props - The shape data as a 2D array of numbers.
  * @returns {JSX.Element} The rendered shape component.
  */
-const Shape = ({ data }: ShapeProps): JSX.Element => {
+const Shape = ({ boxes }: ShapeProps): JSX.Element => {
   const [from, setFrom] = React.useState<'start' | 'end'>('start');
-
-  // converting 2D array to 1D array
-  const boxes = React.useMemo(() => data.flat(Infinity), [data]);
 
   // count of visible boxes
   const countOfVisibleBoxes = React.useMemo(
-    () => boxes.filter((value) => value === 1).length,
+    () =>
+      boxes.reduce((acc, row) => {
+        row.forEach((column) => {
+          if (column === 1) {
+            acc++;
+          }
+        });
+
+        return acc;
+      }, 0),
     [boxes]
   );
 
   // Array, Object, Map,
   // Set => Uniqueness is guaranteed, as Set does not allow duplicate entries.
-  const [selected, setSelected] = React.useState<Set<number>>(new Set());
+  const [selected, setSelected] = React.useState<Set<string>>(new Set());
 
   const [unloading, setUnloading] = React.useState(false);
   const timeRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -58,13 +64,12 @@ const Shape = ({ data }: ShapeProps): JSX.Element => {
   const handleClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     const target = e.target as HTMLDivElement;
     const index = target.getAttribute('data-index');
-    const status = target.getAttribute('data-status');
 
-    if (index === null || status === 'invisible' || selected.has(+index) || unloading) return;
+    if (index === null || selected.has(index) || unloading) return;
 
     setSelected((prev) => {
       const newSelected = new Set(prev);
-      newSelected.add(+index);
+      newSelected.add(index);
 
       return newSelected;
     });
@@ -80,7 +85,7 @@ const Shape = ({ data }: ShapeProps): JSX.Element => {
         const currentKey = from === 'start' ? keys.shift() : keys.pop();
         setSelected((pre) => {
           const updatedKeys = new Set(pre);
-          updatedKeys.delete(currentKey as number);
+          updatedKeys.delete(currentKey as string);
 
           return updatedKeys;
         });
@@ -104,17 +109,24 @@ const Shape = ({ data }: ShapeProps): JSX.Element => {
   }, [countOfVisibleBoxes, selected, unload]);
 
   const renderBoxes = () =>
-    boxes.map((value, index) => {
-      const status = value === 1 ? 'visible' : 'invisible';
-      const isSelected = selected.has(index);
-
+    boxes.map((row, rowindex) => {
       return (
-        <div
-          key={`${value}_${index}`}
-          className={cn(classes.box, classes[status], isSelected && 'bg-green-400')}
-          data-index={index}
-          data-status={status}
-        />
+        <div className={classes.row} key={`${rowindex}`}>
+          {row?.map((column, columnIndex) => {
+            const identifier = `${rowindex}_${columnIndex}`;
+            const isSelected = selected.has(identifier);
+
+            return column === 1 ? (
+              <div
+                key={identifier}
+                className={cn(classes.box, isSelected && 'bg-green-500')}
+                data-index={identifier}
+              />
+            ) : (
+              <div key={identifier} className={cn(classes.box, classes.invisible)} />
+            );
+          })}
+        </div>
       );
     });
 

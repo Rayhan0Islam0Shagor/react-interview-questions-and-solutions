@@ -17,7 +17,7 @@ const Page = () => {
     <section className="flex flex-col items-center justify-center py-20">
       <Title className="font-bold text-center">Interactive Shape</Title>
 
-      <Shape data={BOX_DATA} />
+      <Shape boxes={BOX_DATA} />
     </section>
   );
 };
